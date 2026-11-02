@@ -1,7 +1,12 @@
-from django.shortcuts import get_object_or_404, render
+from django.contrib.auth import get_user_model
+from django.contrib.auth.decorators import login_required
 from django.utils import timezone
+from django.shortcuts import get_object_or_404, redirect, render
 
+from .forms import UserEditForm
 from .models import Category, Post
+
+User = get_user_model()
 
 POSTS_LIMIT = 5
 
@@ -52,3 +57,30 @@ def category_posts(request, category_slug):
         'post_list': post_list,
     }
     return render(request, 'blog/category.html', context)
+
+
+def profile(request, username):
+    """Страница профиля пользователя с его публикациями."""
+    user_profile = get_object_or_404(User, username=username)
+    if request.user == user_profile:
+        posts = user_profile.posts.select_related(
+            'category', 'location', 'author'
+        ).all()
+    else:
+        posts = get_published_posts().filter(author=user_profile)
+
+    context = {
+        'profile': user_profile,
+        'post_list': posts,
+    }
+    return render(request, 'blog/profile.html', context)
+
+
+@login_required
+def edit_profile(request):
+    """Редактирование профиля пользователя."""
+    form = UserEditForm(request.POST or None, instance=request.user)
+    if form.is_valid():
+        form.save()
+        return redirect('blog:profile', username=request.user.username)
+    return render(request, 'blog/user.html', {'form': form})
