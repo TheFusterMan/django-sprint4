@@ -1,5 +1,6 @@
 from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
+from django.core.paginator import Paginator
 from django.utils import timezone
 from django.shortcuts import get_object_or_404, redirect, render
 
@@ -8,7 +9,14 @@ from .models import Category, Post
 
 User = get_user_model()
 
-POSTS_LIMIT = 5
+POSTS_PER_PAGE = 10
+
+
+def paginate(request, queryset):
+    """Вспомогательная функция для пагинации queryset'а."""
+    paginator = Paginator(queryset, POSTS_PER_PAGE)
+    page_number = request.GET.get('page')
+    return paginator.get_page(page_number)
 
 
 def get_published_posts():
@@ -25,9 +33,10 @@ def get_published_posts():
 
 
 def index(request):
-    """Главная страница: 5 последних опубликованных постов."""
-    post_list = get_published_posts()[:POSTS_LIMIT]
-    context = {'post_list': post_list}
+    """Главная страница: 10 постов с пагинацией."""
+    posts = get_published_posts()
+    page_obj = paginate(request, posts)
+    context = {'page_obj': page_obj}
     return render(request, 'blog/index.html', context)
 
 
@@ -69,9 +78,10 @@ def profile(request, username):
     else:
         posts = get_published_posts().filter(author=user_profile)
 
+    page_obj = paginate(request, posts)
     context = {
         'profile': user_profile,
-        'post_list': posts,
+        'page_obj': page_obj,
     }
     return render(request, 'blog/profile.html', context)
 
