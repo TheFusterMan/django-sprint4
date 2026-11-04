@@ -46,12 +46,12 @@ def index(request):
 
 def post_detail(request, post_id):
     """Страница отдельной публикации."""
-    post = get_object_or_404(get_published_posts(), pk=post_id)
+    post = get_object_or_404(Post, pk=post_id)
 
     if post.author != request.user:
         if (
             not post.is_published
-            or not post.category.is_published
+            or (post.category and not post.category.is_published)
             or post.pub_date > timezone.now()
         ):
             raise Http404('Пост не найден')
@@ -87,7 +87,7 @@ def category_posts(request, category_slug):
     page_obj = paginate(request, posts)
     context = {
         'category': category,
-        'post_list': page_obj,
+        'page_obj': page_obj,
     }
     return render(request, 'blog/category.html', context)
 
