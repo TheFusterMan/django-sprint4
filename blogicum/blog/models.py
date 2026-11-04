@@ -115,3 +115,35 @@ class Post(PublishedCreatedModel):
 
     def __str__(self):
         return self.title
+
+
+class Comment(models.Model):
+    """Модель комментария к публикации."""
+
+    text = models.TextField(
+        verbose_name='Текст комментария'
+    )
+    post = models.ForeignKey(
+        Post,
+        on_delete=models.CASCADE,
+        related_name='comments',
+        verbose_name='Публикация'
+    )
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name='Добавлено'
+    )
+    author = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='comments',
+        verbose_name='Автор комментария'
+    )
+
+    class Meta:
+        verbose_name = 'комментарий'
+        verbose_name_plural = 'Комментарии'
+        ordering = ('created_at',)
+
+    def __str__(self):
+        return f'Комментарий {self.author} к посту {self.post_id}'
