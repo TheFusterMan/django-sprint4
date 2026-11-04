@@ -103,7 +103,7 @@ class Post(PublishedCreatedModel):
         related_name='posts'
     )
     image = models.ImageField(
-        'Изображение',
+        verbose_name='Изображение',
         upload_to='posts_images',
         blank=True
     )
