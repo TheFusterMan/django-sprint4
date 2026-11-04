@@ -181,3 +181,32 @@ def edit_comment(request, post_id, comment_id):
         'comment': comment,
     }
     return render(request, 'blog/comment.html', context)
+
+
+@login_required
+def delete_post(request, post_id):
+    """Удаление публикации автором с подтверждением."""
+    post = get_object_or_404(Post, pk=post_id)
+    if post.author != request.user:
+        return redirect('blog:post_detail', post_id=post_id)
+
+    form = PostForm(instance=post)
+    context = {'form': form, 'post': post}
+    if request.method == 'POST':
+        post.delete()
+        return redirect('blog:profile', username=request.user.username)
+    return render(request, 'blog/create.html', context)
+
+
+@login_required
+def delete_comment(request, post_id, comment_id):
+    """Удаление комментария автором с подтверждением."""
+    comment = get_object_or_404(Comment, pk=comment_id, post_id=post_id)
+    if comment.author != request.user:
+        return redirect('blog:post_detail', post_id=post_id)
+
+    if request.method == 'POST':
+        comment.delete()
+        return redirect('blog:post_detail', post_id=post_id)
+    context = {'comment': comment}
+    return render(request, 'blog/comment.html', context)
