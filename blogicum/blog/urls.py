@@ -17,8 +17,8 @@ urlpatterns = [
     ),
     path(
         'posts/<int:post_id>/',
-         views.post_detail,
-         name='post_detail'
+        views.post_detail,
+        name='post_detail'
     ),
     path(
         'posts/<int:post_id>/edit/',
